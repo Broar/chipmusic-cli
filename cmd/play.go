@@ -49,7 +49,7 @@ func play(trackPageURL string) error {
 	var format beep.Format
 	switch response.FileType {
 	case chipmusic.AudioFileTypeMP3:
-		stream, format, err = mp3.Decode(response.Track)
+		stream, format, err = mp3.Decode(response.Reader)
 	default:
 		return fmt.Errorf("%s is an unknown audio format", response.FileType)
 	}

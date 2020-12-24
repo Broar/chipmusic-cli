@@ -5,18 +5,23 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html/atom"
 	"io"
 	"net/http"
 	"net/url"
+	"path/filepath"
+	"strings"
 )
 
 const (
 	// DefaultBaseURL is redundantly the base URL of the chipmusic.org
 	DefaultBaseURL = "https://chipmusic.org"
 
+	// AudioFileTypeMP3 is the expected extension for an MP3 audio file
 	AudioFileTypeMP3 AudioFileType = "mp3"
 )
 
+// AudioFileType is an enumeration of possible audio file types
 type AudioFileType string
 
 // Client is a struct capable of interacting with chipmusic.org
@@ -75,16 +80,49 @@ func WithHTTPClient(client *http.Client) Option {
 	}
 }
 
-type GetTrackResponse struct {
-	Title  string
-	Artist string
-	Rating int
-	Views  int
-	Track  io.ReadCloser
+// Track is song from chipmusic.org. It contains metadata related to the song along with a reader of the track itself
+type Track struct {
+
+	// Title is the name of the track
+	Title       string
+
+	// Artist is the name of the author who composed the track
+	Artist      string
+
+	// Reader reads the body of the track. This should be closed when a client is finished using a track
+	Reader   io.ReadCloser
+
+	// FileType represents the type of audio file for this track. This should be used to determine how to interpret and
+	// play the content returned from Reader
 	FileType AudioFileType
 }
 
-func (c *Client) GetTrack(ctx context.Context, trackPageURL string) (*GetTrackResponse, error) {
+func (t *Track) Close() error {
+	return t.Reader.Close()
+}
+
+// GetTrack takes a URL to a track page for chipmusic.org and returns a Track. The returned struct contains metadata
+// about the track and a reader which can be used to download the track itself for playback. Use FileType in the Track
+// to determine how to use the the content returned from the reader
+func (c *Client) GetTrack(ctx context.Context, trackPageURL string) (*Track, error) {
+	if !strings.HasPrefix(trackPageURL, c.baseURL) {
+		return nil, fmt.Errorf("%s is an invalid URL: must start with %s", trackPageURL, c.baseURL)
+	}
+
+	document, err := c.getTrackPageDocument(ctx, trackPageURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get track page document: %w", err)
+	}
+
+	track, err := c.parseTrack(document)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download track: %w", err)
+	}
+
+	return track, nil
+}
+
+func (c *Client) getTrackPageDocument(ctx context.Context, trackPageURL string) (*goquery.Document, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, trackPageURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request to get track page: %w", err)
@@ -105,20 +143,33 @@ func (c *Client) GetTrack(ctx context.Context, trackPageURL string) (*GetTrackRe
 		return nil, fmt.Errorf("failed to create parser when getting track page: %w", err)
 	}
 
-	resp, err := c.parseTrackMetadata(ctx, document)
+	return document, nil
+}
 
-	trackDownloadURL, err := parseTrackDownloadURL(document)
+func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
+	info := document.Find("#item_info")
+	if len(info.Nodes) == 0 {
+		return nil, fmt.Errorf("failed to find track information")
+	}
+
+	track, err := c.parseTrackMetadata(info)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse track metadata: %w", err)
+	}
+
+	trackDownloadURL, err := parseTrackDownloadURL(info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse track download: %w", err)
 	}
 
-	// TODO: Using the original context with a timeout ends the download too early
-	request, err = http.NewRequestWithContext(context.Background(), http.MethodGet, trackDownloadURL, nil)
+	track.FileType = AudioFileType(strings.TrimPrefix(filepath.Ext(trackDownloadURL), "."))
+
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, trackDownloadURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get response when downloading track: %w", err)
 	}
 
-	response, err = c.client.Do(request)
+	response, err := c.client.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get response when downloading track: %w", err)
 	}
@@ -128,35 +179,42 @@ func (c *Client) GetTrack(ctx context.Context, trackPageURL string) (*GetTrackRe
 		return nil, fmt.Errorf("expected status code %d when downloading track but got %d instead", http.StatusOK, response.StatusCode)
 	}
 
-	resp.Track = response.Body
+	track.Reader = response.Body
 
-	// TODO
-	resp.FileType = AudioFileTypeMP3
-
-	return resp, nil
+	return track, nil
 }
 
-func (c *Client) parseTrackMetadata(ctx context.Context, document *goquery.Document) (*GetTrackResponse, error) {
-	resp := &GetTrackResponse{}
-
-	// TODO
-
-	rating, err := c.getTrackRating(ctx, resp.Title)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get track rating: %w", err)
+func (c *Client) parseTrackMetadata(info *goquery.Selection) (*Track, error) {
+	track := &Track{}
+	content := info.Find("#item_content_block")
+	if len(content.Nodes) == 0 {
+		return nil, errors.New("failed to find track download: expected at least 1 node but found 0")
 	}
 
-	resp.Rating = rating
+	for _, node := range content.Children().Nodes {
+		if node.DataAtom == atom.Lookup([]byte("h3")) {
+			track.Title = node.FirstChild.Data
+		}
 
-	return resp, nil
+		if node.DataAtom == atom.Lookup([]byte("span")) {
+			child := node.FirstChild
+			if child == nil {
+				continue
+			}
+
+			track.Artist = strings.TrimPrefix(child.FirstChild.Data, "By ")
+		}
+
+		if track.Title != "" && track.Artist != "" {
+			break
+		}
+ 	}
+
+	return track, nil
 }
 
-func (c *Client) getTrackRating(ctx context.Context, title string) (int, error) {
-	return 0, nil
-}
-
-func parseTrackDownloadURL(document *goquery.Document) (string, error) {
-	download := document.Find("#item_info #item_play_options #item_download")
+func parseTrackDownloadURL(info *goquery.Selection) (string, error) {
+	download := info.Find("#item_play_options #item_download")
 	if download == nil {
 		return "", errors.New("failed to find track download")
 	}
@@ -174,5 +232,3 @@ func parseTrackDownloadURL(document *goquery.Document) (string, error) {
 
 	return "", errors.New("failed to find track download: no URLs found in node attributes")
 }
-
-
