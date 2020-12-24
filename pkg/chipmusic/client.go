@@ -1,12 +1,14 @@
 package chipmusic
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html/atom"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -113,16 +115,36 @@ type Track struct {
 	// Artist is the name of the author who composed the track
 	Artist string
 
-	// Reader reads the body of the track. This should be closed when a client is finished using a track
-	Reader io.ReadCloser
+	// Reader reads the body of the track. It is also able to seek to any point within the track
+	Reader ReadSeekCloser
 
 	// FileType represents the type of audio file for this track. This should be used to determine how to interpret and
 	// play the content returned from Reader
 	FileType AudioFileType
 }
 
-func (t *Track) Close() error {
-	return t.Reader.Close()
+// ReadSeekCloser is an interface combining the capabilities of ReaderSeeker and Closer. The beep library
+type ReadSeekCloser interface {
+	io.ReadSeeker
+	io.Closer
+}
+
+// ReadSeekNopCloser is an implementation of ReadSeekCloser which is able to read and seek but closing the reader
+// doesn't actually do anything
+type ReadSeekNopCloser struct {
+	Reader io.ReadSeeker
+}
+
+func (r *ReadSeekNopCloser) Read(p []byte) (n int, err error) {
+	return r.Reader.Read(p)
+}
+
+func (r *ReadSeekNopCloser) Seek(offset int64, whence int) (int64, error) {
+	return r.Reader.Seek(offset, whence)
+}
+
+func (r *ReadSeekNopCloser) Close() error {
+	return nil
 }
 
 // Search performs a search against chipmusic.org, returning a list of URLs to tracks which match. If a search returns
@@ -270,7 +292,13 @@ func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 		return nil, fmt.Errorf("expected status code %d when downloading track but got %d instead", http.StatusOK, response.StatusCode)
 	}
 
-	track.Reader = response.Body
+	raw, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download entire track: %w", err)
+	}
+
+	reader := bytes.NewReader(raw)
+	track.Reader = &ReadSeekNopCloser{Reader: reader}
 
 	return track, nil
 }

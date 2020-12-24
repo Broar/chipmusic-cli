@@ -66,9 +66,6 @@ func TestGetTrack(t *testing.T) {
 
 	track, err := client.GetTrack(context.Background(), fmt.Sprintf("%s/some.artist/music/some.music", server.URL))
 	require.NoError(t, err, "should not have received an error when getting track")
-
-	defer track.Close()
-
 	assert.Equal(t, "Lovesickness [2a03]", track.Title)
 	assert.Equal(t, "Fearofdark", track.Artist)
 	assert.NotNil(t, track.Reader)
