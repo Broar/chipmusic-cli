@@ -1,0 +1,986 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="ROBOTS" content="NOINDEX, FOLLOW" />
+    <title>Music - ChipMusic.org</title>
+    <link rel="top" href="/" title="Home" />
+    <link rel="search" href="https://chipmusic.org/forums/search/" title="Search" />
+    <link rel="author" href="https://chipmusic.org/forums/members/" title="Members" />
+    <link rel="stylesheet" type="text/css" media="screen" href="https://chipmusic.org/forums/style/Trashbaby/Main.css?response1.27" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="icon" href="/favicon3.ico" type="image/ico" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/touchicons/touchicon3-57.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/touchicons/touchicon3-114.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/touchicons/touchicon3-72.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/touchicons/touchicon3-144.png" />
+    <link rel="apple-touch-icon" sizes="129x129" href="/touchicons/touchicon3-129.png" />
+    <script type="text/javascript" src="/forums/include/js/common.js"></script>
+    <script type="text/javascript" src="/forums/scripts/jquery/jquery.js?v110"></script>
+
+    <script type="text/javascript" src="https://chipmusic.org/forums/components/flashdetect/flash_detect_min.js"></script>
+    <script type="text/javascript" src="https://chipmusic.org/forums/scripts/media.js"></script>
+
+</head>
+<body>
+<div id="brd-wrap" class="brd">
+    <div id="brd-music" class="brd-page basic-page">
+
+        <div id="brd-head" class="gen-content">
+
+            <p id="brd-access"><a href="#brd-main">Skip to forum content</a></p>
+            <div id="chipmusictwit"></div>
+            <p id="brd-title"><a href="/">ChipMusic.org</a></p>
+            <p id="brd-desc">chipmusic.org is an online community in respect and relation to chip music, art and its parallels.</p>
+        </div>
+
+
+        <div id="brd-navlinks" class="gen-content">
+            <!--
+            A fake / hidden checkbox is used as click reciever,
+            so you can use the :checked selector on it.
+            -->
+            <input type="checkbox" />
+            <span></span>
+            <span></span>
+            <span></span>
+
+            <ul>
+                <li id="navindex"><a href="/">Home</a></li><li id="navmusic" class="isactive"><a href="/music" title="View Music Items">Music</a></li><li id="navforum"><a href="/forums">Forums</a></li><li id="navrecent"><a href="https://chipmusic.org/forums/search/recent/" title="Find topics which contain recent posts.">Recent Posts</a></li><li id="navuserlist"><a href="https://chipmusic.org/forums/members/">Members</a></li><li id="navregister"><a href="https://chipmusic.org/forums/register/">Sign-Up</a></li><li id="navlogin"><a href="https://chipmusic.org/forums/login/">Login</a></li>
+            </ul>
+        </div>
+
+
+        <div id="brd-visit" class="gen-content">
+            <p id="welcome"><span>You are not logged in.</span> <span>Please login or register.</span></p>
+
+        </div>
+
+
+        <div id="sub_menu">
+
+            <div id="brd-search" class="gen-content">
+                <h3 class="hn"><span>Search</span></h3>
+                <form class="frm-form" method="get" accept-charset="utf-8" action="https://chipmusic.org/forums/search/">
+                    <input type="hidden" name="action" value="search" />
+                    <input type="hidden" name="search_in" value="all" />
+                    <input type="hidden" name="sort_dir" value="DESC" />
+                    <input type="hidden" name="show_as" value="topics" />
+                    <input type="text" id="site_search" name="keywords" size="20" maxlength="100" />
+                    <input type="submit" id="site_search_go" name="search" value="Go" />
+                </form>
+                <a href="/forums/search/" id="advanced_search_link">Advanced Search</a>
+            </div>
+
+
+
+
+            <div id="brd-stats" class="gen-content">
+                <h2 class="hn"><span>Stats</span></h2>
+                <ul>
+                    <li class="st-users"><span></span></li>
+                    <li class="st-users"><span></span></li>
+
+                </ul>
+            </div>
+            <div id="brd-online" class="gen-content">
+                <h3 class="hn"><span>Who's Online</span></h3><p><a href="https://chipmusic.org/Orgia+Mode">Orgia Mode</a></p><div><strong>6</strong> Guests <strong>1</strong> Member <strong>10</strong> Bots (+<strong>46</strong> bot dupes)</div>
+            </div>
+        </div>
+
+
+
+
+        <div id="brd-main">
+            <h1 class="main-title">Music</h1>
+
+            <div id="brd-crumbs-top" class="crumbs gen-content">
+                <p><span class="crumb crumbfirst"><a href="/">ChipMusic.org</a></span> <span class="crumb crumblast"><span> / </span>Music</span> </p>
+            </div>
+
+
+            <script>
+
+                function selectReplacement(obj) {
+                    // append a class to the select
+                    obj.className += ' replaced';
+                    // create list for styling
+                    var ul = document.createElement('ul');
+                    ul.className = 'selectReplacement';
+                    ul.id = obj.id+'_replacement';
+                    var opts = obj.options;
+                    for (var i=0; i<opts.length; i++) {
+                        var selectedOpt;
+                        if (opts[i].selected) {
+                            selectedOpt = i;
+                            break;
+                        } else {
+                            selectedOpt = 0;
+                        }
+                    }
+                    for (var i=0; i<opts.length; i++) {
+                        var li = document.createElement('li');
+                        var txt = document.createTextNode(opts[i].text);
+                        li.appendChild(txt);
+                        li.id = ul.id+'_'+opts[i].value;
+                        li.selIndex = opts[i].index;
+                        li.selectID = obj.id;
+                        li.onclick = function() {
+                            selectMe(this);
+                        }
+                        if (i == selectedOpt) {
+                            li.className = 'selected';
+                            li.onclick = function() {
+                                this.parentNode.className += ' selectOpen';
+                                this.onclick = function() {
+                                    selectMe(this);
+                                }
+                            }
+                        }
+                        if (window.attachEvent) {
+                            li.onmouseover = function() {
+                                this.className += ' hover';
+                            }
+                            li.onmouseout = function() {
+                                this.className =
+                                    this.className.replace(new RegExp(" hover\\b"), '');
+                            }
+                        }
+                        ul.appendChild(li);
+                    }
+                    // add the input and the ul
+                    obj.parentNode.appendChild(ul);
+                }
+                function selectMe(obj) {
+                    var lis = obj.parentNode.getElementsByTagName('li');
+                    for (var i=0; i<lis.length; i++) {
+                        if (lis[i] != obj) { // not the selected list item
+                            lis[i].className='';
+                            lis[i].onclick = function() {
+                                selectMe(this);
+                            }
+                        } else {
+                            setVal(obj.selectID, obj.selIndex);
+                            obj.className='selected';
+                            obj.parentNode.className =
+                                obj.parentNode.className.replace(new RegExp(" selectOpen\\b"), '');
+                            obj.onclick = function() {
+                                obj.parentNode.className += ' selectOpen';
+                                this.onclick = function() {
+                                    selectMe(this);
+                                }
+                            }
+                        }
+                    }
+                }
+                function setVal(objID, selIndex) {
+                    var obj = document.getElementById(objID);
+                    obj.selectedIndex = selIndex;
+                    getFilters();
+                }
+                function setForm() {
+                    var s = document.getElementsByTagName('select');
+                    for (var i=0; i<s.length; i++) {
+                        selectReplacement(s[i]);
+                    }
+                }
+                function closeSel(obj) {
+                    // close the ul
+                }
+
+            </script>
+
+            <script>
+                var lastListItemSelected = 0;
+                var musicPlayerEnabled   = false;
+                var launchedList = false;
+                var expected_hash;
+                var last_loc = false;
+                var i        = '';
+                var li       = '';
+                var ls       = '';
+                var f        = '';
+                var t        = '';
+                var s        = '';
+                var p        = '1';
+                var o        = '';
+                var d        = '';
+                var cm       = '';
+                var oh       = '';
+                var wmi;
+                var set_form_started = false;
+                var enable_music_player = true;
+
+                onload = function()
+                {
+                    if(wmi) window.clearInterval(wmi);
+                    if (!expected_hash) wmi = window.setInterval("getHashChanges()", 200);
+
+                    var configList = {
+                        "id": '414584619753697280',
+                        "domId": 'chipmusictwit',
+                        "maxTweets": 1,
+                        "enableLinks": true
+                    };
+                    twitterFetcher.fetch(configList);
+
+                    if(!FlashDetect.installed){
+                        enable_music_player = false;
+                    }
+                }
+
+                getHashChanges = function()
+                {
+                    if (window.location.hash != expected_hash)
+                    {
+                        //do something
+                        var cmd = parseHashToArray(getHash());
+                        if(cmd['s']) s = cmd['s'];
+                        if(cmd['f']) f = cmd['f'];
+                        if(cmd['t']) t = cmd['t'];
+                        if(cmd['i']) i = cmd['i'];
+                        if(cmd['p']) p = cmd['p'];
+                        if(cmd['o']) o = cmd['o'];
+                        if(cmd['d']) d = cmd['d'];
+                        if(s) $('#list_search_field').val(s);
+                        if(t) setSelectValue($('#list_type'),t);
+                        if(f) setSelectValue($('#show_only'),f);
+                        if(!p) p = '1';
+                        setSearchClose();
+                        expected_hash = window.location.hash;
+                        if(expected_hash && $("#list").attr('id')) {
+                            setLoading(1);
+                            $.get('https://chipmusic.org/music/ajax_list/'+p+'/?'+expected_hash.substr(1),setListOnLoad);
+                        }
+                        if(i) getItem(false,i);
+                    }
+                    return true;
+                }
+
+                setSelectValue = function(obj,val)
+                {
+                    obj.children().each(function(index) {
+                        if($(this).val() == val) {
+                            $(this).attr('selected',true);
+                        }
+                    });
+                }
+
+                setHash = function()
+                {
+                    s = $('#list_search_field').val();
+                    t = $('#list_type').val();
+                    f = $('#show_only').val();
+                    var loc = "#";
+                    var search = escape(s);
+                    search = search.replace("%3A",":");
+                    if(s) loc += "s="+search;
+                    if(t) {if(loc != '#') loc += "&"; loc += "t="+escape(t);}
+                    if(f) {if(loc != '#') loc += "&"; loc += "f="+escape(f);}
+                    if(i) {if(loc != '#') loc += "&"; loc += "i="+i;}
+                    if(p && p != '1') {if(loc != '#') loc += "&"; loc += "p="+escape(p);}
+                    if(o) {if(loc != '#') loc += "&"; loc += "o="+escape(o);}
+                    if(d) {if(loc != '#') loc += "&"; loc += "d="+escape(d);}
+
+                    window.location.hash = loc;
+                    expected_hash        = window.location.hash;
+                }
+
+                getHash = function()
+                {
+                    var loc = window.location.hash;
+                    if(loc.substr(0,1) == '#') loc = loc.substr(1);
+                    if(loc) {
+                        return loc;
+                    } else {
+                        return "";
+                    }
+                }
+
+                parseHashToArray = function(h)
+                {
+                    if(h.substr(0,1) == '#') h = h.substr(1);
+                    var a = h.split('&');
+                    var p;
+                    var r = {i:'',s:'',f:'',t:'',p:'1',o:'',d:''};
+
+                    for(var c=0;c<a.length;c++) {
+                        p = a[c].split('=');
+                        r[p[0]] = p[1];
+                    }
+
+                    return r;
+                }
+
+                setLoading = function(show)
+                {
+                    if(show == 1) {
+                        $('#list_load_set').show();
+                    } else {
+                        $('#list_load_set').hide();
+                    }
+                }
+
+                getList = function()
+                {
+                    //{onComplete: SetLogin,
+                    setLoading(1);
+                    $.get('https://chipmusic.org/music/ajax_list/'+p,setList);
+                    return false;
+                }
+
+                setListOnLoad = function(response)
+                {
+                    if(response != '') {
+                        $('#item_list_stage').html(response);
+                        //setLinks($('#item_list_stage a'));
+                    }
+                    var offset = $('#item_list_stage').offset();
+                    oh =  offset.top;
+                    setLoading(0);
+                }
+
+                setList = function(response)
+                {
+                    if(response != '') {
+                        $('#item_list_stage').html(response);
+                        //setLinks($('#item_list_stage a'));
+                    }
+                    var offset = $('#item_list_stage').offset();
+                    oh =  offset.top;
+                    setLoading(0);
+                }
+
+                getItem = function(id,url,jsurl)
+                {
+                    if(id != false) {
+                        var divid = "#listitem"+id;
+                        if($(divid)) {
+                            if($(divid).hasClass('highlight') || !enable_music_player) {
+                                window.location = url;
+                            } else {
+                                $(divid).addClass('selected');
+                                $(divid).addClass('loader');
+                                if(lastListItemSelected && lastListItemSelected != divid && $(lastListItemSelected)) {
+                                    $(lastListItemSelected).removeClass('loader');
+                                    $(lastListItemSelected).removeClass('highlight');
+                                }
+                                lastListItemSelected = divid;
+
+                                if($('#music_list').attr('id')) {
+                                    $.get('https://chipmusic.org/music/ajax_get_item/'+jsurl+'?no_autostart',setItem);
+                                } else {
+                                    $.get('https://chipmusic.org/music/ajax_get_item/'+jsurl,setItem);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                setClosePageHeight = function()
+                {
+                    $('#item_list_stage').css('height',oh);
+                }
+
+                setItem = function(response)
+                {
+                    if(response != "") {
+                        $('#item').html(response);
+
+                        if($('#music_list').attr('id')) {
+                            $('#item').appendTo($(lastListItemSelected+"after"));
+                        }
+
+                        if($('#item').css('display')=='none') {
+                            $('#item').slideDown(200);
+                        }
+                        $(lastListItemSelected).addClass("highlight");
+                    } else {
+                        $(lastListItemSelected).removeClass("selected");
+                        $(lastListItemSelected).removeClass("loader");
+                    }
+                    setLoading(0);
+                }
+
+                closeItem = function()
+                {
+                    if($(lastListItemSelected)) {
+                        $(lastListItemSelected).removeClass("highlight");
+                        $(lastListItemSelected).removeClass("loader");
+                        $('#item').slideUp(200);
+                        i = '';
+                        setHash();
+                    }
+                    setLoading(0);
+                }
+
+                setFilters = function()
+                {
+                    $('#list_search_field').val(s);
+                    setSearchClose();
+                    $('#list_type_'+t).attr("selected","selected");
+                    selectMe($('#list_type_replacement_'+t));
+                    $('#show_only_'+f).attr("selected","selected");
+                    selectMe($('#show_only_replacement_'+f));
+                }
+
+                getFilters = function()
+                {
+                    setHash();
+                    setSearchClose();
+                    loc = getHash();
+                    p = 1;
+                    if(loc != last_loc || last_loc == false) {
+                        closeItem();
+                        setLoading(1);
+                        $.get('https://chipmusic.org/music/ajax_list/1/?'+loc,setList);
+                    }
+                    last_loc = loc;
+                }
+
+                setSearchClose = function()
+                {
+                    if(s) {
+                        $('#item_list_search_close').show();
+                    } else {
+                        $('#item_list_search_close').hide();
+                    }
+                }
+
+                clearSearch = function()
+                {
+                    $('#list_search_field').val('');
+                    getFilters();
+                }
+
+                getPage = function(pg)
+                {
+                    p = pg;
+                    setHash();
+                    loc = getHash();
+                    closeItem();
+                    setLoading(1);
+                    $.get('https://chipmusic.org/music/ajax_list/'+p+'/?'+loc,setList);
+                }
+
+                sortList = function(od)
+                {
+                    o = od;
+                    if(d) {
+                        d = 0;
+                    } else {
+                        d = 1;
+                    }
+                    p = 1;
+                    setHash();
+                    loc = getHash();
+                    closeItem();
+                    setLoading(1);
+                    $.get('https://chipmusic.org/music/ajax_list/1/?'+loc,setList);
+                }
+
+                clearFilters = function()
+                {
+                    s = t = f = '';
+                    setFilters();
+                    $('#list_type_').attr("selected","selected");
+                    selectMe($('#list_type_replacement_'));
+                    $('#show_only_').attr("selected","selected");
+                    selectMe($('#show_only_replacement_'));
+                }
+
+                setItemTag = function(name)
+                {
+                    s = "tag:"+name;
+                    setFilters();
+                }
+
+                setItemArtist = function(name)
+                {
+                    s = "by:"+name;
+                    setFilters();
+                }
+
+                setBookmark = function(id,status)
+                {
+                    $('#bookmark').html("<span class=\"button waiting\">Please Wait...</span>");
+                    var action = 'remove_bookmark';
+                    if(status == 1) {
+                        action = 'add_bookmark';
+                    }
+                    $.post('https://chipmusic.org/music/'+action+'/',{bookmark:id},setBookmarkResponse);
+                }
+
+                setBookmarkResponse = function(response)
+                {
+                    if(response != '') {
+                        $('#bookmark').html("<span class=\"button success\">"+response+"</span>");
+                    } else {
+                        $('#bookmark').html("<span class=\"button failed\">No you!</span>");
+                    }
+                }
+
+                setFeatured = function(id,status)
+                {
+                    if(confirm('Are you sure you wish to feature this item?')) {
+                        $('#featured').html("<span class=\"button failed\">Please Wait...</span>");
+                        var action = 'remove_featured';
+                        if(status == 1) {
+                            action = 'add_featured';
+                        }
+                        $.post('https://chipmusic.org/music/'+action+'/',{featured:id},setFeaturedResponse);
+                    }
+                }
+
+                setFeaturedResponse = function(response)
+                {
+                    if(response != '') {
+                        $('#featured').html("<span class=\"button success\">"+response+"</span>");
+                    } else {
+                        $('#featured').html("<span class=\"button failed\">No you!</span>");
+                    }
+                }
+
+                postComment = function(id) {
+                    $('#item_comment').hide();
+                    $('#item_comment_sending').show();
+                    scroll(0,0);
+                    $.post('https://chipmusic.org/music/comment/add/'+id,{comment:escape($('#comment').val())},setCommentResponse);
+                    return false;
+                }
+
+                removeComment = function(id,cmt) {
+                    if(confirm("Are you sure you wish to remove this comment?")) {
+                        $.post('https://chipmusic.org/music/comment/remove/'+id,{comment:cmt},setCommentRemoved);
+                    }
+                }
+
+                setCommentResponse = function(response) {
+                    if(response == 'Comment Added.') {
+                        $('#comment').val("");
+                        $.get('https://chipmusic.org/music/ajax_get_comments/'+i,setItemComment);
+                    } else {
+                        $('#item_comment_error').show();
+                        $('#item_comment').show();
+                        $('#item_comment_sending').hide();
+                        $('#item_comment_error').html(response);
+                    }
+                }
+
+                setCommentRemoved = function(response) {
+                    if(response != '') {
+                        $('#comment'+response).html("<span class=\"comment_removed\">Comment Removed</span>");
+                    }
+                }
+
+                setItemComment = function(response)
+                {
+                    if(response != '') {
+                        $('#item_comments').html(response);
+                        $('#item_comment_accept').html('Comment Added!');
+                        $('#item_comment_accept').show();
+                        $('#item_comment').show();
+                        $('#item_comment_sending').hide();
+                    }
+                }
+            </script>
+
+
+
+            <div id="list">
+                <form name="item_list_filters" method="get" onsubmit="getFilters();return false;">
+                    <div id="item_list_set">
+                        <div id="item_list_options">
+                            <div id="list_search">
+                                <span>Search</span>
+                                <a class="button" id="item_list_search_close" href="javascript:clearSearch()" style="display:none">x</a>
+                                <input type="text" id="list_search_field" name="list_search" value="" /><a class="button" id="item_list_option_submit" href="javascript:getFilters()">Go</a>
+                            </div>
+                            <div id="list_file_type">
+                                <span>File Type</span>
+                                <select name="list_type" id="list_type" onchange="javascript:getFilters()" style="display:none">
+                                    <option id="list_type_" value="">All</option>
+                                    <option id="list_type_ahx" value="ahx" >ahx</option>
+                                    <option id="list_type_it" value="it" >it</option>
+                                    <option id="list_type_mid" value="mid" >mid</option>
+                                    <option id="list_type_mod" value="mod" >mod</option>
+                                    <option id="list_type_mp3" value="mp3" >mp3</option>
+                                    <option id="list_type_nsf" value="nsf" >nsf</option>
+                                    <option id="list_type_sav" value="sav" >sav</option>
+                                    <option id="list_type_sid" value="sid" >sid</option>
+                                    <option id="list_type_xm" value="xm" >xm</option>
+                                    <option id="list_type_ym" value="ym" >ym</option>
+                                </select>
+                            </div>
+                            <div id="list_addional_options">
+                                <span>Filters</span>
+                                <select name="show_only" id="show_only" onchange="javascript:getFilters()" style="display:none">
+                                    <option id="show_only_" value="" selected="selected">None</option>
+                                    <option id="show_only_9" value="9" >Featured Music</option>
+                                    <option id="show_only_10" value="10" >High Ratings</option>
+                                    <option id="show_only_8" value="8" >Random list</option>
+                                    <option id="show_only_1" value="1" >Constructive criticism requests</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div id="item_podcast">
+                    <a href="https://chipmusic.org/music/rss/feed.xml?limit=50"><img src="https://chipmusic.org/forums/img/rssfeed.png" /></a>
+                </div>
+                <!--<a id="list_mark_read" href="">Mark all items as viewed</a> -->
+                <div id="item_list_ajax_extras"></div>
+                <div id="list_load_set" style="display:none"><div id="item_list_loading_container"><div id="item_list_loading" class="list_loading">Loading...</div></div></div>
+                <div id="item" style="display:none;clear:both" onfocus="javascript:closeItem();"></div>
+                <div id="item_list_stage">
+                    <div id="item_list_stage_body">
+                        <div id="brd-pagepost-top" class="main-pagepost gen-content">
+                            <p class="paging">
+                                <span class="pages">Pages</span>
+                                <strong class="first-item">1</strong> <a href="?p=2&s=&f=&t=&d=&i=&o=">2</a> <a href="?p=3&s=&f=&t=&d=&i=&o=">3</a> <span>...</span> <a href="?p=2&s=&f=&t=&d=&i=&o=">Next</a>
+                            </p>
+                        </div>
+
+
+                        <div class="main-subhead">
+                            <div><strong class="subject-rating"><a href="javascript:sortList('rating')">Pop</a></strong></div>
+                            <div><strong class="subject-title"><a href="javascript:sortList('title')">Title</a></strong></div>
+                            <div><strong class="info-replies"><a href="javascript:sortList('comment_count')">Replies</a></strong></div>
+                            <div><strong class="info-views"><a href="javascript:sortList('view_count')">Views</a></strong></div>
+                            <div><strong class="info-lastpost"><a href="javascript:sortList('date')">Date</a></strong></div>
+                        </div>
+
+                        <div id="music_list" class="main-content main-forum forum-views">
+
+
+                            <div id="listitem12368" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/sloopygoop/music/actually-i-want-everything-wario-style-mariah-carey-cover" onclick="getItem(12368,'https://chipmusic.org/sloopygoop/music/actually-i-want-everything-wario-style-mariah-carey-cover','sloopygoop/music/actually-i-want-everything-wario-style-mariah-carey-cover');return false;"> Actually, I Want Everything (Wario-style Mariah Carey cover)</a></h3>
+                                    <p><span class="item-starter">by <cite>sloopygoop</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>4</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Dec 19, 2020 9:53 pm</strong></div>
+                            </div>
+                            <div id="listitem12368after"></div>
+                            <div id="listitem12367" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Hide+Your+Tigers/music/virtues-lsdj" onclick="getItem(12367,'https://chipmusic.org/Hide+Your+Tigers/music/virtues-lsdj','Hide+Your+Tigers/music/virtues-lsdj');return false;"> Virtues (LSDJ)</a></h3>
+                                    <p><span class="item-starter">by <cite>Hide Your Tigers</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>4</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Dec 16, 2020 1:16 am</strong></div>
+                            </div>
+                            <div id="listitem12367after"></div>
+                            <div id="listitem12366" class="main-item">
+                                <div class="info-pop">
+                                    <div class="active"></div><div class="active"></div><div class="active"></div><div class="active"></div><div class="active"></div>						</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/daisy/music/bump" onclick="getItem(12366,'https://chipmusic.org/daisy/music/bump','daisy/music/bump');return false;"> Bump</a></h3>
+                                    <p><span class="item-starter">by <cite>daisy</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>2</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>6</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Dec 3, 2020 12:49 pm</strong></div>
+                            </div>
+                            <div id="listitem12366after"></div>
+                            <div id="listitem12365" class="main-item">
+                                <div class="info-pop">
+                                    <div class="active"></div><div class="active"></div>			<div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Falling+For+A+Square/music/hope" onclick="getItem(12365,'https://chipmusic.org/Falling+For+A+Square/music/hope','Falling+For+A+Square/music/hope');return false;"> Hope</a></h3>
+                                    <p><span class="item-starter">by <cite>Falling For A Square</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>1</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>13</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Nov 24, 2020 9:16 pm</strong></div>
+                            </div>
+                            <div id="listitem12365after"></div>
+                            <div id="listitem12364" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Hide+Your+Tigers/music/circuit-circus-lsdj" onclick="getItem(12364,'https://chipmusic.org/Hide+Your+Tigers/music/circuit-circus-lsdj','Hide+Your+Tigers/music/circuit-circus-lsdj');return false;"> Circuit Circus (LSDJ)</a></h3>
+                                    <p><span class="item-starter">by <cite>Hide Your Tigers</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>5</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Nov 24, 2020 4:52 pm</strong></div>
+                            </div>
+                            <div id="listitem12364after"></div>
+                            <div id="listitem12363" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/theROSSWOODband/music/electric-sheep" onclick="getItem(12363,'https://chipmusic.org/theROSSWOODband/music/electric-sheep','theROSSWOODband/music/electric-sheep');return false;"> Electric Sheep</a></h3>
+                                    <p><span class="item-starter">by <cite>theROSSWOODband</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>5</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Nov 20, 2020 11:57 pm</strong></div>
+                            </div>
+                            <div id="listitem12363after"></div>
+                            <div id="listitem12362" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Whitely/music/12" onclick="getItem(12362,'https://chipmusic.org/Whitely/music/12','Whitely/music/12');return false;"> 12</a></h3>
+                                    <p><span class="item-starter">by <cite>Whitely</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>5</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Nov 19, 2020 1:37 pm</strong></div>
+                            </div>
+                            <div id="listitem12362after"></div>
+                            <div id="listitem12361" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Whitely/music/careless-whisper---wham!---lsdj-vocal-cover" onclick="getItem(12361,'https://chipmusic.org/Whitely/music/careless-whisper---wham!---lsdj-vocal-cover','Whitely/music/careless-whisper---wham!---lsdj-vocal-cover');return false;"> Careless Whisper - Wham! - LSDJ/Vocal cover</a></h3>
+                                    <p><span class="item-starter">by <cite>Whitely</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>5</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Nov 16, 2020 1:09 pm</strong></div>
+                            </div>
+                            <div id="listitem12361after"></div>
+                            <div id="listitem12360" class="main-item">
+                                <div class="info-pop">
+                                    <div class="active"></div><div class="active"></div><div class="active"></div>			<div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Notehead/music/snakerider" onclick="getItem(12360,'https://chipmusic.org/Notehead/music/snakerider','Notehead/music/snakerider');return false;"> Snakerider</a></h3>
+                                    <p><span class="item-starter">by <cite>Notehead</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>1</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>14</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 31, 2020 7:05 pm</strong></div>
+                            </div>
+                            <div id="listitem12360after"></div>
+                            <div id="listitem12359" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/unexpectedbowtie/music/slowly-boiled-frogs" onclick="getItem(12359,'https://chipmusic.org/unexpectedbowtie/music/slowly-boiled-frogs','unexpectedbowtie/music/slowly-boiled-frogs');return false;"> slowly boiled frogs</a></h3>
+                                    <p><span class="item-starter">by <cite>unexpectedbowtie</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>4</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 29, 2020 2:25 pm</strong></div>
+                            </div>
+                            <div id="listitem12359after"></div>
+                            <div id="listitem12358" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/k7/music/janet-jackson-rockwithu-lsdj-cover" onclick="getItem(12358,'https://chipmusic.org/k7/music/janet-jackson-rockwithu-lsdj-cover','k7/music/janet-jackson-rockwithu-lsdj-cover');return false;"> Janet Jackson RockwithU LSDJ cover</a></h3>
+                                    <p><span class="item-starter">by <cite>k7</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>8</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 16, 2020 6:22 am</strong></div>
+                            </div>
+                            <div id="listitem12358after"></div>
+                            <div id="listitem12357" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/bloerb/music/jalapeo-peach-panini" onclick="getItem(12357,'https://chipmusic.org/bloerb/music/jalapeo-peach-panini','bloerb/music/jalapeo-peach-panini');return false;"> Jalapeño Peach Panini</a></h3>
+                                    <p><span class="item-starter">by <cite>bloerb</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>6</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 15, 2020 1:59 am</strong></div>
+                            </div>
+                            <div id="listitem12357after"></div>
+                            <div id="listitem12356" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Feryl/music/main-menu" onclick="getItem(12356,'https://chipmusic.org/Feryl/music/main-menu','Feryl/music/main-menu');return false;"> Main Menu</a></h3>
+                                    <p><span class="item-starter">by <cite>Feryl</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>8</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 14, 2020 1:22 am</strong></div>
+                            </div>
+                            <div id="listitem12356after"></div>
+                            <div id="listitem12355" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Dissimulation/music/loop" onclick="getItem(12355,'https://chipmusic.org/Dissimulation/music/loop','Dissimulation/music/loop');return false;"> Loop</a></h3>
+                                    <p><span class="item-starter">by <cite>Dissimulation</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>8</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 8, 2020 7:33 am</strong></div>
+                            </div>
+                            <div id="listitem12355after"></div>
+                            <div id="listitem12354" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Dissimulation/music/test" onclick="getItem(12354,'https://chipmusic.org/Dissimulation/music/test','Dissimulation/music/test');return false;"> Test</a></h3>
+                                    <p><span class="item-starter">by <cite>Dissimulation</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>3</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 8, 2020 7:21 am</strong></div>
+                            </div>
+                            <div id="listitem12354after"></div>
+                            <div id="listitem12353" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/amateurlsdj/music/proximity-preview" onclick="getItem(12353,'https://chipmusic.org/amateurlsdj/music/proximity-preview','amateurlsdj/music/proximity-preview');return false;"> Proximity (Preview)</a></h3>
+                                    <p><span class="item-starter">by <cite>amateurlsdj</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>5</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 2, 2020 6:44 pm</strong></div>
+                            </div>
+                            <div id="listitem12353after"></div>
+                            <div id="listitem12352" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/vasaturo/music/manic-obsessive-depressive-disorder" onclick="getItem(12352,'https://chipmusic.org/vasaturo/music/manic-obsessive-depressive-disorder','vasaturo/music/manic-obsessive-depressive-disorder');return false;"> Manic Obsessive Depressive Disorder</a></h3>
+                                    <p><span class="item-starter">by <cite>vasaturo</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>6</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Oct 1, 2020 6:42 pm</strong></div>
+                            </div>
+                            <div id="listitem12352after"></div>
+                            <div id="listitem12351" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/p1xel+sh4der/music/0x00effec7" onclick="getItem(12351,'https://chipmusic.org/p1xel+sh4der/music/0x00effec7','p1xel+sh4der/music/0x00effec7');return false;"> 0x00effec7</a></h3>
+                                    <p><span class="item-starter">by <cite>p1xel sh4der</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>4</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Sep 29, 2020 7:57 am</strong></div>
+                            </div>
+                            <div id="listitem12351after"></div>
+                            <div id="listitem12350" class="main-item">
+                                <div class="info-pop">
+                                    <div class="active"></div><div class="active"></div>			<div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/ScanianWolf/music/midnight-flight-and-the-dream-you" onclick="getItem(12350,'https://chipmusic.org/ScanianWolf/music/midnight-flight-and-the-dream-you','ScanianWolf/music/midnight-flight-and-the-dream-you');return false;"> Midnight Flight and The Dream: You</a></h3>
+                                    <p><span class="item-starter">by <cite>ScanianWolf</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>10</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Sep 28, 2020 11:02 am</strong></div>
+                            </div>
+                            <div id="listitem12350after"></div>
+                            <div id="listitem12348" class="main-item">
+                                <div class="info-pop">
+                                    <div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div><div class="inactive"></div>			</div>
+
+                                <div class="item-subject">
+                                    <h3 class="hn"><a href="https://chipmusic.org/Feryl/music/svanholm" onclick="getItem(12348,'https://chipmusic.org/Feryl/music/svanholm','Feryl/music/svanholm');return false;"> Svanholm</a></h3>
+                                    <p><span class="item-starter">by <cite>Feryl</cite></span></p>
+                                </div>
+                                <div class="info-replies"><strong>0</strong> <span class="label">comments</span></div>
+                                <div class="info-views"><strong>6</strong> <span class="label">views</span></div>
+                                <div class="info-lastpost"><span class="label">Posted</span> <strong>Sep 27, 2020 5:04 am</strong></div>
+                            </div>
+                            <div id="listitem12348after"></div>
+                            <div id="brd-pagepost-bottom" class="main-pagepost gen-content">
+                                <p class="paging">
+                                    <span class="pages">Pages</span>
+                                    <strong class="first-item">1</strong> <a href="?p=2&s=&f=&t=&d=&i=&o=">2</a> <a href="?p=3&s=&f=&t=&d=&i=&o=">3</a> <span>...</span> <a href="?p=2&s=&f=&t=&d=&i=&o=">Next</a>
+                                </p>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+
+                if(wmi) window.clearInterval(wmi);
+                if (!expected_hash) wmi = window.setInterval("getHashChanges()", 200);
+                setForm();
+            </script>
+
+            <div id="brd-crumbs-end" class="crumbs gen-content">
+                <p><span class="crumb crumbfirst"><a href="/">ChipMusic.org</a></span> <span class="crumb crumblast"><span> / </span>Music</span> </p>
+            </div>
+        </div>
+        <!-- forum_qpost -->
+
+        <!-- forum_info -->
+
+        <div class="hr"><hr /></div>
+
+        <div id="brd-about" class="gen-content">
+            <!-- forum_about -->
+        </div>
+        <!-- forum_debug -->
+
+    </div>
+
+    <div id="footer">
+        <p id="footer_contact"><a href="/cdn-cgi/l/email-protection#15666174737355767d7c657860667c763b7a6772">Contact Us</a></p>
+        <p id="footer_copyright"><a href="/forums/forum/3/rules-announcements/">Forum Rules and Announcements</a></p>
+        <p id="footer_moderators"><a href="/forums/users/?mods">View Forum Moderators</a></p>
+    </div>
+
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/javascript" src="/forums/include/js/common.js"></script>
+
+<script src="https://chipmusic.org/forums/scripts/twitterfeed/twitter.js?v16.1" type="text/javascript"></script>
+
+
+
+
+<script>
+    $(function() {
+        $('.main-item').click(function(e) {
+            e.stopPropagation();
+            var tar = $(this).find('a').first();
+            if(tar.attr('onclick')) {
+                var j=tar.attr('onclick');
+                var f=new Function (j);
+                return f();
+            } else if (tar.attr('href')) {
+                window.location = tar.attr('href');
+            }
+        });
+    });
+</script>
+</body>
+</html>
