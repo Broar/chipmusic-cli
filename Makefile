@@ -14,7 +14,7 @@ build:
 
 .PHONY: test
 test:
-	GO111MODULE=on go test -v ./...
+	GO111MODULE=on go test -v -cover ./...
 
 .PHONY: generate
 generate:

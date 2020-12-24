@@ -95,7 +95,7 @@ func WithBaseURL(baseURL string) Option {
 // WithHTTPClient allows overriding the default HTTP client used to make requests
 func WithHTTPClient(client *http.Client) Option {
 	return func(c *Client) error {
-		if c == nil {
+		if client == nil {
 			return errors.New("client cannot be nil")
 		}
 
@@ -247,15 +247,7 @@ func (c *Client) getTrackPageDocument(ctx context.Context, trackPageURL string) 
 
 func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 	info := document.Find("#item_info")
-	if len(info.Nodes) == 0 {
-		return nil, fmt.Errorf("failed to find track information")
-	}
-
-	track, err := c.parseTrackMetadata(info)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse track metadata: %w", err)
-	}
-
+	track := c.parseTrackMetadata(info)
 	trackDownloadURL, err := parseTrackDownloadURL(info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse track download: %w", err)
@@ -283,13 +275,9 @@ func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 	return track, nil
 }
 
-func (c *Client) parseTrackMetadata(info *goquery.Selection) (*Track, error) {
+func (c *Client) parseTrackMetadata(info *goquery.Selection) *Track {
 	track := &Track{}
 	content := info.Find("#item_content_block")
-	if len(content.Nodes) == 0 {
-		return nil, errors.New("failed to find track download: expected at least 1 node but found 0")
-	}
-
 	for _, node := range content.Children().Nodes {
 		if node.DataAtom == atom.Lookup([]byte("h3")) {
 			track.Title = node.FirstChild.Data
@@ -309,23 +297,16 @@ func (c *Client) parseTrackMetadata(info *goquery.Selection) (*Track, error) {
 		}
 	}
 
-	return track, nil
+	return track
 }
 
 func parseTrackDownloadURL(info *goquery.Selection) (string, error) {
 	download := info.Find("#item_play_options #item_download")
-	if download == nil {
-		return "", errors.New("failed to find track download")
-	}
-
-	if len(download.Nodes) == 0 {
-		return "", errors.New("failed to find track download: expected at least 1 node but found 0")
-	}
-
-	node := download.Nodes[0]
-	for _, attribute := range node.Attr {
-		if attribute.Key == "href" {
-			return attribute.Val, nil
+	for _, node := range download.Nodes {
+		for _, attribute := range node.Attr {
+			if attribute.Key == "href" {
+				return attribute.Val, nil
+			}
 		}
 	}
 
