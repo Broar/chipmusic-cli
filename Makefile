@@ -7,6 +7,9 @@ GOARCH ?= amd64
 LDFLAGS ?= -X 'main.version=$(VERSION)'
 BINARY ?= $(PROJECT)-$(GOOS)-$(GOARCH)
 
+.PHONY: all
+all: clean generate build test
+
 .PHONY: build
 build:
 	GO111MODULE=on GOOS="$(GOOS)" GOARCH="$(GOARCH)" go build -ldflags "$(LDFLAGS)" -o "$(TARGET)/$(BINARY)" main.go
