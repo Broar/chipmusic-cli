@@ -1,19 +1,20 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/mp3"
-	"github.com/faiface/beep/speaker"
+	"github.com/broar/chipmusic-cli/pkg/player"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 	"time"
 )
 
 const (
 	defaultTimeout    = 1 * time.Minute
-	defaultBufferSize = 1 * time.Second / 10
+
 )
 
 var playCmd = &cobra.Command{
@@ -40,73 +41,52 @@ func playTrack(trackPageURL string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	response, err := client.GetTrack(ctx, trackPageURL)
-	if err != nil {
-		return fmt.Errorf("failed to download track: %w", err)
-	}
-
-	var stream beep.StreamSeekCloser
-	var format beep.Format
-	switch response.FileType {
-	case chipmusic.AudioFileTypeMP3:
-		stream, format, err = mp3.Decode(response.Reader)
-	default:
-		return fmt.Errorf("%s is an unknown audio format", response.FileType)
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to decode audio for file format %s: %w", response.FileType, err)
-	}
-
-	defer stream.Close()
-
-	if err := speaker.Init(format.SampleRate, format.SampleRate.N(defaultBufferSize)); err != nil {
-		return fmt.Errorf("failed to initalize speaker with format %+v: %w", format, err)
-	}
-
-	done := make(chan struct{})
-	speaker.Play(beep.Seq(stream, beep.Callback(func() {
-		done <- struct{}{}
-	})))
-
-	<-done
-
-	return nil
-}
-
-func play(ctx context.Context, client *chipmusic.Client, trackPageURL string) error {
 	track, err := client.GetTrack(ctx, trackPageURL)
 	if err != nil {
 		return fmt.Errorf("failed to download track: %w", err)
 	}
 
-	var stream beep.StreamSeekCloser
-	var format beep.Format
-	switch track.FileType {
-	case chipmusic.AudioFileTypeMP3:
-		stream, format, err = mp3.Decode(track.Reader)
-	default:
-		return fmt.Errorf("%s is an unknown audio format", track.FileType)
-	}
-
+	tp, err := player.NewTrackPlayer()
 	if err != nil {
-		return fmt.Errorf("failed to decode audio for file format %s: %w", track.FileType, err)
+		return fmt.Errorf("failed to create track player: %w", err)
 	}
 
-	defer stream.Close()
+	defer tp.Close()
 
-	if err := speaker.Init(format.SampleRate, format.SampleRate.N(defaultBufferSize)); err != nil {
-		return fmt.Errorf("failed to initalize speaker with format %+v: %w", format, err)
+	if err := tp.Play(track); err != nil {
+		return fmt.Errorf("failed to play track %s: %w", track.Title, err)
 	}
 
 	fmt.Printf("Now playing: %s by %s\n", track.Title, track.Artist)
 
-	done := make(chan struct{})
-	speaker.Play(beep.Seq(stream, beep.Callback(func() {
-		done <- struct{}{}
-	})))
+	go handleTrackControls(tp)
 
-	<-done
-
+	<-tp.Done()
 	return nil
+}
+
+func handleTrackControls(tp *player.TrackPlayer) {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		command := strings.TrimSpace(scanner.Text())
+		if len(command) == 0 {
+			continue
+		}
+
+		var err error
+		switch command {
+		case "pause":
+			tp.Pause()
+		case "stop":
+			err = tp.Stop()
+		case "loop":
+			err = tp.Loop()
+		case "skip":
+			err = tp.Skip()
+		}
+
+		if err != nil {
+			fmt.Printf("an error occurred while running the %s command: %v", command, err)
+		}
+	}
 }
