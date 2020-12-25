@@ -123,6 +123,10 @@ type Track struct {
 	FileType AudioFileType
 }
 
+func (t *Track) Close() error {
+	return t.Reader.Close()
+}
+
 // ReadSeekCloser is an interface combining the capabilities of ReaderSeeker and Closer. The beep library
 type ReadSeekCloser interface {
 	io.ReadSeeker

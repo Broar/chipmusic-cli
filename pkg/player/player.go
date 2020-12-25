@@ -1,6 +1,7 @@
 package player
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
@@ -14,9 +15,16 @@ import (
 )
 
 const (
-	// DefaultBufferSize is the default size of the buffer used for the track player. Use a lower duration for better
-	// responsiveness and conversely a higher duration for higher quality but greater CPU usage
+	// DefaultBufferSize is the default size of the buffer used for the track player
 	DefaultBufferSize = 1 * time.Second / 10
+)
+
+var (
+	// ErrNilTrack is an error returned when attempting to play a nil Track
+	ErrNilTrack          = errors.New("track cannot be nil")
+
+	// ErrUnknownFileFormat is an error returned when a Track's FileFormat cannot be decoded by beep
+	ErrUnknownFileFormat = errors.New("unknown file format")
 )
 
 // TrackPlayer is a struct capable of playing tracks from readers. It offers a simple suite of audio controls such as
@@ -27,14 +35,16 @@ type TrackPlayer struct {
 	mux     sync.Mutex
 	ctrl    *beep.Ctrl
 	current beep.StreamSeekCloser
+	ctx     context.Context
+	cancel  context.CancelFunc
 	looping bool
-	done    chan struct{}
 }
 
 // Option is an alias for a function that modifies a TrackPlayer. An Option is used to override the default values of TrackPlayer
 type Option func(player *TrackPlayer) error
 
-// WithBufferSize allows overriding the buffer size used for playback
+// WithBufferSize allows overriding the buffer size used for playback. Use a lower duration for better responsiveness
+// and conversely a higher duration for higher quality but greater CPU usage
 func WithBufferSize(bufferSize time.Duration) Option {
 	return func(player *TrackPlayer) error {
 		if bufferSize <= 0 {
@@ -62,9 +72,17 @@ func NewTrackPlayer(options ...Option) (*TrackPlayer, error) {
 	return player, nil
 }
 
-// Play starts playing a track from its starting position. Clients can call this method any number of times. If there
-// is a currently loaded track, any resources associated with it will be automatically closed
+// Play starts playing a track from its starting position.
+//
+// This method is not safe to call concurrently. To use this method, clients should do the following:
+// 1. Call Play
+// 2. Call Done and listen for a signal returned on the channel
+// 3. Call Close to release any resources associated with the current track OR simply call Play which already does this
 func (t *TrackPlayer) Play(track *chipmusic.Track) error {
+	if track == nil {
+		return ErrNilTrack
+	}
+
 	stream, format, err := t.decodeTrackAudio(track)
 	if err != nil {
 		return fmt.Errorf("failed to decode track audio: %w", err)
@@ -74,18 +92,22 @@ func (t *TrackPlayer) Play(track *chipmusic.Track) error {
 		return fmt.Errorf("failed to initalize speaker with format %+v: %w", format, err)
 	}
 
-	t.mux.Lock()
-	defer t.mux.Unlock()
-
 	if err := t.Close(); err != nil {
 		return fmt.Errorf("failed to close current track: %w", err)
 	}
 
+	t.mux.Lock()
+
 	t.current = stream
 	t.ctrl = &beep.Ctrl{Streamer: stream, Paused: false}
-	t.done = make(chan struct{})
+	if t.ctx == nil {
+		t.ctx, t.cancel = context.WithCancel(context.Background())
+	}
+
+	t.mux.Unlock()
+
 	speaker.Play(beep.Seq(t.ctrl, beep.Callback(func() {
-		t.done <- struct{}{}
+		t.cancel()
 	})))
 
 	return nil
@@ -93,7 +115,13 @@ func (t *TrackPlayer) Play(track *chipmusic.Track) error {
 
 // Done returns a channel signifying when the current track is done playing which clients can listen on
 func (t *TrackPlayer) Done() <-chan struct{} {
-	return t.done
+	t.mux.Lock()
+	defer t.mux.Unlock()
+	if t.ctx == nil {
+		t.ctx, t.cancel = context.WithCancel(context.Background())
+	}
+
+	return t.ctx.Done()
 }
 
 func (t *TrackPlayer) decodeTrackAudio(track *chipmusic.Track) (beep.StreamSeekCloser, beep.Format, error) {
@@ -101,7 +129,7 @@ func (t *TrackPlayer) decodeTrackAudio(track *chipmusic.Track) (beep.StreamSeekC
 	case chipmusic.AudioFileTypeMP3:
 		return mp3.Decode(track.Reader)
 	default:
-		return beep.StreamSeekCloser(nil), beep.Format{}, fmt.Errorf("%s is an unknown audio format", track.FileType)
+		return beep.StreamSeekCloser(nil), beep.Format{}, fmt.Errorf("%w: %s", ErrUnknownFileFormat, track.FileType)
 	}
 }
 
@@ -135,11 +163,11 @@ func (t *TrackPlayer) Stop() error {
 
 // Loop loops the currently playing track. If the current track is already looping, this method disables looping. If
 // there is no track currently playing, this method does nothing
-func (t *TrackPlayer) Loop() error {
+func (t *TrackPlayer) Loop() {
 	speaker.Lock()
 	defer speaker.Unlock()
 	if t.ctrl == nil {
-		return nil
+		return
 	}
 
 	t.mux.Lock()
@@ -152,8 +180,6 @@ func (t *TrackPlayer) Loop() error {
 		t.ctrl.Streamer = beep.Loop(math.MaxInt32, t.current)
 		t.looping = true
 	}
-
-	return nil
 }
 
 // Skip seeks to the end of the current track and effectively skips it. If there is no track currently playing,
@@ -165,17 +191,32 @@ func (t *TrackPlayer) Skip() error {
 		return nil
 	}
 
-	if err := t.current.Seek(t.current.Len()); err != nil && errors.Is(err, io.EOF) {
+	// Seeking directly the length of the track causes an EOF error to be returned. Seeking to -1 before that position
+	// is effectively the same as skipping the entire track and simplifies certain assertions in unit tests. In the
+	// future, we can reevaluate if seeking to immediately before the end of the track is necessary
+	if err := t.current.Seek(t.current.Len() - 1); err != nil && errors.Is(err, io.EOF) {
 		return fmt.Errorf("failed to seek to end of track: %w", err)
 	}
 
 	return nil
 }
 
+// Close closes all resources associated with the current track. If there is no track currently playing, this method
+// does nothing. This method is implicitly called by Play. There is no need for clients call this method themselves if
+// planning to call Play again; however, this method does need to be called when a TrackPlayer will no longer be used
 func (t *TrackPlayer) Close() error {
-	if t.current != nil {
-		return t.current.Close()
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	if t.current == nil {
+		return nil
 	}
 
-	return nil
+	if t.ctx != nil {
+		t.cancel()
+		t.ctx = nil
+		t.cancel = nil
+	}
+
+	return t.current.Close()
 }

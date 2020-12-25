@@ -80,7 +80,7 @@ func handleTrackControls(tp *player.TrackPlayer) {
 		case "stop":
 			err = tp.Stop()
 		case "loop":
-			err = tp.Loop()
+			tp.Loop()
 		case "skip":
 			err = tp.Skip()
 		}
