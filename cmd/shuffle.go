@@ -96,11 +96,13 @@ func getAndPlayTracks(tracks []string, page int, client *chipmusic.Client, tp *p
 
 		cancel()
 
-		db.UpdateCurrentlyPlayingTrack(track)
+		db.UpdateCurrentTrack(track)
 
 		if err := tp.Play(track); err != nil {
 			return fmt.Errorf("failed to play track %s: %w", track.Title, err), false
 		}
+
+		go handleTrackTimer(tp, db)
 
 		<-tp.Done()
 	}

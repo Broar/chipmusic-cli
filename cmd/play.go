@@ -59,20 +59,20 @@ func playTrack(trackPageURL string) error {
 		}
 	}()
 
-	go func() {
-		handleTrackControlActions(actions, tp)
-	}()
+	go handleTrackControlActions(actions, tp)
 
 	track, err := client.GetTrack(ctx, trackPageURL)
 	if err != nil {
 		return fmt.Errorf("failed to download track: %w", err)
 	}
 
-	db.UpdateCurrentlyPlayingTrack(track)
+	db.UpdateCurrentTrack(track)
 
 	if err := tp.Play(track); err != nil {
 		return fmt.Errorf("failed to play track %s: %w", track.Title, err)
 	}
+
+	go handleTrackTimer(tp, db)
 
 	<-tp.Done()
 	return nil
@@ -101,6 +101,18 @@ func handleTrackControlActions(actions <-chan string, tp *player.TrackPlayer) {
 			if err != nil {
 				fmt.Printf("failed to handle track control: %v: %v\n", action, err)
 			}
+		}
+	}
+}
+
+func handleTrackTimer(tp *player.TrackPlayer, db *dashboard.TerminalDashboard) {
+	for {
+		ticker := time.NewTicker(time.Second)
+		select {
+		case <-ticker.C:
+			db.UpdateTrackTimer(tp.CurrentTime(), tp.TotalTime())
+		case <-tp.Done():
+			return
 		}
 	}
 }

@@ -17,11 +17,12 @@ import (
 const (
 	// DefaultBufferSize is the default size of the buffer used for the track player
 	DefaultBufferSize = 1 * time.Second / 10
+	NoCurrentTrack = -1
 )
 
 var (
 	// ErrNilTrack is an error returned when attempting to play a nil Track
-	ErrNilTrack          = errors.New("track cannot be nil")
+	ErrNilTrack = errors.New("track cannot be nil")
 
 	// ErrUnknownFileFormat is an error returned when a Track's FileFormat cannot be decoded by beep
 	ErrUnknownFileFormat = errors.New("unknown file format")
@@ -34,6 +35,7 @@ type TrackPlayer struct {
 
 	mux     sync.Mutex
 	ctrl    *beep.Ctrl
+	format  beep.Format
 	current beep.StreamSeekCloser
 	ctx     context.Context
 	cancel  context.CancelFunc
@@ -99,6 +101,7 @@ func (t *TrackPlayer) Play(track *chipmusic.Track) error {
 	t.mux.Lock()
 
 	t.current = stream
+	t.format = format
 	t.ctrl = &beep.Ctrl{Streamer: stream, Paused: false}
 	if t.ctx == nil {
 		t.ctx, t.cancel = context.WithCancel(context.Background())
@@ -199,6 +202,34 @@ func (t *TrackPlayer) Skip() error {
 	}
 
 	return nil
+}
+
+// CurrentTime returns the current position of the track as a duration. If there is no track currently playing, this
+// method does nothing
+func (t *TrackPlayer) CurrentTime() time.Duration {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+	if t.current == nil {
+		return NoCurrentTrack
+	}
+
+	speaker.Lock()
+	defer speaker.Unlock()
+	return t.format.SampleRate.D(t.current.Position())
+}
+
+// TotalTime returns the total length of the track as a duration. If there is no track currently playing, this
+// method does nothing
+func (t *TrackPlayer) TotalTime() time.Duration {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+	if t.current == nil {
+		return NoCurrentTrack
+	}
+
+	speaker.Lock()
+	defer speaker.Unlock()
+	return t.format.SampleRate.D(t.current.Len())
 }
 
 // Close closes all resources associated with the current track. If there is no track currently playing, this method

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
 	"github.com/gdamore/tcell/v2"
+	"time"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 	TrackControlSkip  = "skip"
 
 	currentlyPlayingID = "currently-playing"
+	trackTimeID        = "time"
 )
 
 var (
@@ -24,6 +26,14 @@ var (
 
 	selectedTrackControlStyle = tcell.StyleDefault.Foreground(tcell.ColorReset).Background(tcell.ColorWhite)
 	defaultTextStyle          = tcell.StyleDefault.Foreground(tcell.ColorReset).Background(tcell.ColorReset)
+
+	trackControls = []string{
+		TrackControlPlay,
+		TrackControlPause,
+		TrackControlStop,
+		TrackControlLoop,
+		TrackControlSkip,
+	}
 )
 
 // TerminalDashboard is a struct capable of displaying an interactive dashboard for playing tracks using a terminal emulator
@@ -61,15 +71,19 @@ func NewTerminalDashboard(options ...Option) (*TerminalDashboard, error) {
 		screen: screen,
 		widgets: map[string]*TextWidget{
 			currentlyPlayingID: NewTextWidget(0, 0, "", defaultTextStyle),
-			TrackControlPlay:   NewTextWidget(0, 2, "p", defaultTextStyle),
-			TrackControlPause:  NewTextWidget(2, 2, "v", defaultTextStyle),
-			TrackControlStop:   NewTextWidget(4, 2, "s", defaultTextStyle),
-			TrackControlLoop:   NewTextWidget(6, 2, "l", defaultTextStyle),
-			TrackControlSkip:   NewTextWidget(8, 2, "f", defaultTextStyle),
+			trackTimeID:        NewTextWidget(0, 2, "0:00 / 0:00", defaultTextStyle),
 		},
 		selected: TrackControlPlay,
 		actions:  make(chan string),
 		tracks:   make(chan *chipmusic.Track),
+	}
+
+	previous := ""
+	x := 0
+	for i, trackControl := range trackControls {
+		x += len(previous)
+		dashboard.widgets[trackControl] = NewTextWidget(x+(i*2), 3, trackControl, defaultTextStyle)
+		previous = trackControl
 	}
 
 	for _, option := range options {
@@ -138,11 +152,23 @@ func (d *TerminalDashboard) init() error {
 	return nil
 }
 
-func (d *TerminalDashboard) UpdateCurrentlyPlayingTrack(track *chipmusic.Track) {
+func (d *TerminalDashboard) UpdateCurrentTrack(track *chipmusic.Track) {
 	playing := d.widgets[currentlyPlayingID]
 	playing.SetText(fmt.Sprintf("Now playing: %s by %s", track.Title, track.Artist))
 	playing.Draw(d.screen)
 	d.screen.Show()
+}
+
+func (d *TerminalDashboard) UpdateTrackTimer(current, total time.Duration) {
+	timer := d.widgets[trackTimeID]
+	timer.SetText(fmt.Sprintf("%s / %s", formatStopwatchTime(current), formatStopwatchTime(total)))
+	timer.Draw(d.screen)
+	d.screen.Show()
+}
+
+func formatStopwatchTime(duration time.Duration) string {
+	seconds := duration.Round(time.Second).Seconds()
+	return fmt.Sprintf("%02d:%02d", int(seconds) / 60, int(seconds) % 60)
 }
 
 func (d *TerminalDashboard) nextTrackControl() *TextWidget {
