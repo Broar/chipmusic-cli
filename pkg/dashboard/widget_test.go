@@ -15,6 +15,10 @@ func (m *MockScreen) SetContent(x int, y int, mainc rune, combc []rune, style tc
 	m.called++
 }
 
+func (m *MockScreen) Show() {
+	// Nothing to do
+}
+
 func TestTextWidget_Draw_NilBaseWidget(t *testing.T) {
 	screen := &MockScreen{}
 	widget := &TextWidget{}

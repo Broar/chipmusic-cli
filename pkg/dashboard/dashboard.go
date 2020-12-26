@@ -16,7 +16,7 @@ const (
 	TrackControlSkip  = "skip"
 
 	currentlyPlayingID = "currently-playing"
-	trackTimeID        = "time"
+	trackTimerID       = "time"
 )
 
 var (
@@ -42,7 +42,6 @@ type TerminalDashboard struct {
 	widgets  map[string]*TextWidget
 	selected string
 	actions  chan string
-	tracks   chan *chipmusic.Track
 }
 
 // Option is an alias for a function that modifies a TerminalDashboard. An Option is used to override the default values of TerminalDashboard
@@ -71,11 +70,10 @@ func NewTerminalDashboard(options ...Option) (*TerminalDashboard, error) {
 		screen: screen,
 		widgets: map[string]*TextWidget{
 			currentlyPlayingID: NewTextWidget(0, 0, "", defaultTextStyle),
-			trackTimeID:        NewTextWidget(0, 2, "0:00 / 0:00", defaultTextStyle),
+			trackTimerID:       NewTextWidget(0, 2, formatTrackTimer(0, 0), defaultTextStyle),
 		},
 		selected: TrackControlPlay,
 		actions:  make(chan string),
-		tracks:   make(chan *chipmusic.Track),
 	}
 
 	previous := ""
@@ -153,6 +151,10 @@ func (d *TerminalDashboard) init() error {
 }
 
 func (d *TerminalDashboard) UpdateCurrentTrack(track *chipmusic.Track) {
+	if track == nil {
+		return
+	}
+
 	playing := d.widgets[currentlyPlayingID]
 	playing.SetText(fmt.Sprintf("Now playing: %s by %s", track.Title, track.Artist))
 	playing.Draw(d.screen)
@@ -160,15 +162,19 @@ func (d *TerminalDashboard) UpdateCurrentTrack(track *chipmusic.Track) {
 }
 
 func (d *TerminalDashboard) UpdateTrackTimer(current, total time.Duration) {
-	timer := d.widgets[trackTimeID]
-	timer.SetText(fmt.Sprintf("%s / %s", formatStopwatchTime(current), formatStopwatchTime(total)))
+	timer := d.widgets[trackTimerID]
+	timer.SetText(formatTrackTimer(current, total))
 	timer.Draw(d.screen)
 	d.screen.Show()
 }
 
+func formatTrackTimer(current, total time.Duration) string {
+	return fmt.Sprintf("%s / %s", formatStopwatchTime(current), formatStopwatchTime(total))
+}
+
 func formatStopwatchTime(duration time.Duration) string {
 	seconds := duration.Round(time.Second).Seconds()
-	return fmt.Sprintf("%02d:%02d", int(seconds) / 60, int(seconds) % 60)
+	return fmt.Sprintf("%01d:%02d", int(seconds) / 60, int(seconds) % 60)
 }
 
 func (d *TerminalDashboard) nextTrackControl() *TextWidget {
@@ -215,6 +221,5 @@ func (d *TerminalDashboard) Actions() <-chan string {
 
 func (d *TerminalDashboard) Close() error {
 	close(d.actions)
-	close(d.tracks)
 	return nil
 }
