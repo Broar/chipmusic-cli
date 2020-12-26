@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
 	"github.com/gdamore/tcell/v2"
+	"strings"
 	"time"
 )
 
@@ -17,14 +18,16 @@ const (
 
 	currentlyPlayingID = "currently-playing"
 	trackTimerID       = "time"
+	progressBarID      = "progress"
+
+	progressBarLength = 32
 )
 
 var (
 	// ErrNilTrack is an error returned when attempting to use a nil Screen for a TerminalDashboard
 	ErrNilScreen           = errors.New("screen cannot be nil")
-	ErrUnknownTrackControl = errors.New("failed to get rune for unknown track control")
 
-	selectedTrackControlStyle = tcell.StyleDefault.Foreground(tcell.ColorReset).Background(tcell.ColorWhite)
+	selectedTrackControlStyle = tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)
 	defaultTextStyle          = tcell.StyleDefault.Foreground(tcell.ColorReset).Background(tcell.ColorReset)
 
 	trackControls = []string{
@@ -34,6 +37,8 @@ var (
 		TrackControlLoop,
 		TrackControlSkip,
 	}
+
+	initialProgressBar = strings.Repeat("▒", progressBarLength)
 )
 
 // TerminalDashboard is a struct capable of displaying an interactive dashboard for playing tracks using a terminal emulator
@@ -70,6 +75,7 @@ func NewTerminalDashboard(options ...Option) (*TerminalDashboard, error) {
 		screen: screen,
 		widgets: map[string]*TextWidget{
 			currentlyPlayingID: NewTextWidget(0, 0, "", defaultTextStyle),
+			progressBarID:      NewTextWidget(0, 1, initialProgressBar, defaultTextStyle),
 			trackTimerID:       NewTextWidget(0, 2, formatTrackTimer(0, 0), defaultTextStyle),
 		},
 		selected: TrackControlPlay,
@@ -155,16 +161,27 @@ func (d *TerminalDashboard) UpdateCurrentTrack(track *chipmusic.Track) {
 		return
 	}
 
-	playing := d.widgets[currentlyPlayingID]
-	playing.SetText(fmt.Sprintf("Now playing: %s by %s", track.Title, track.Artist))
-	playing.Draw(d.screen)
+	currentlyPlaying := d.widgets[currentlyPlayingID]
+	currentlyPlaying.SetText(fmt.Sprintf("Now playing: %s by %s", track.Title, track.Artist))
+	currentlyPlaying.Draw(d.screen)
+
+	progressBar := d.widgets[progressBarID]
+	progressBar.SetText(initialProgressBar)
+	progressBar.Draw(d.screen)
+
 	d.screen.Show()
 }
 
 func (d *TerminalDashboard) UpdateTrackTimer(current, total time.Duration) {
-	timer := d.widgets[trackTimerID]
-	timer.SetText(formatTrackTimer(current, total))
-	timer.Draw(d.screen)
+	trackTimer := d.widgets[trackTimerID]
+	trackTimer.SetText(formatTrackTimer(current, total))
+	trackTimer.Draw(d.screen)
+
+	progressBarText := strings.Repeat("▊", int(float64(progressBarLength) * (float64(current) / float64(total))))
+	progressBar := d.widgets[progressBarID]
+	progressBar.SetText(progressBarText)
+	progressBar.Draw(d.screen)
+
 	d.screen.Show()
 }
 
@@ -174,7 +191,7 @@ func formatTrackTimer(current, total time.Duration) string {
 
 func formatStopwatchTime(duration time.Duration) string {
 	seconds := duration.Round(time.Second).Seconds()
-	return fmt.Sprintf("%01d:%02d", int(seconds) / 60, int(seconds) % 60)
+	return fmt.Sprintf("%01d:%02d", int(seconds)/60, int(seconds)%60)
 }
 
 func (d *TerminalDashboard) nextTrackControl() *TextWidget {
