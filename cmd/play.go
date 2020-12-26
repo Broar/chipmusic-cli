@@ -1,20 +1,17 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
+	"github.com/broar/chipmusic-cli/pkg/dashboard"
 	"github.com/broar/chipmusic-cli/pkg/player"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 	"time"
 )
 
 const (
-	defaultTimeout    = 1 * time.Minute
-
+	defaultTimeout = 1 * time.Minute
 )
 
 var playCmd = &cobra.Command{
@@ -41,11 +38,6 @@ func playTrack(trackPageURL string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	track, err := client.GetTrack(ctx, trackPageURL)
-	if err != nil {
-		return fmt.Errorf("failed to download track: %w", err)
-	}
-
 	tp, err := player.NewTrackPlayer()
 	if err != nil {
 		return fmt.Errorf("failed to create track player: %w", err)
@@ -53,40 +45,62 @@ func playTrack(trackPageURL string) error {
 
 	defer tp.Close()
 
+	db, err := dashboard.NewTerminalDashboard()
+	if err != nil {
+		return fmt.Errorf("failed to create terminal dashboard: %w", err)
+	}
+
+	defer db.Close()
+
+	actions := db.Actions()
+	go func() {
+		if err := db.Start(); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		handleTrackControlActions(actions, tp)
+	}()
+
+	track, err := client.GetTrack(ctx, trackPageURL)
+	if err != nil {
+		return fmt.Errorf("failed to download track: %w", err)
+	}
+
+	db.UpdateCurrentlyPlayingTrack(track)
+
 	if err := tp.Play(track); err != nil {
 		return fmt.Errorf("failed to play track %s: %w", track.Title, err)
 	}
-
-	fmt.Printf("Now playing: %s by %s\n", track.Title, track.Artist)
-
-	go handleTrackControls(tp)
 
 	<-tp.Done()
 	return nil
 }
 
-func handleTrackControls(tp *player.TrackPlayer) {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		command := strings.TrimSpace(scanner.Text())
-		if len(command) == 0 {
-			continue
-		}
+func handleTrackControlActions(actions <-chan string, tp *player.TrackPlayer) {
+	for {
+		select {
+		case action := <-actions:
+			var err error
+			switch action {
+			case dashboard.TrackControlPlay:
+				// Nothing to do
+			case dashboard.TrackControlPause:
+				tp.Pause()
+			case dashboard.TrackControlStop:
+				err = tp.Stop()
+			case dashboard.TrackControlLoop:
+				tp.Loop()
+			case dashboard.TrackControlSkip:
+				err = tp.Skip()
+			default:
+				fmt.Printf("received unknown track control: %v\n", action)
+			}
 
-		var err error
-		switch command {
-		case "pause":
-			tp.Pause()
-		case "stop":
-			err = tp.Stop()
-		case "loop":
-			tp.Loop()
-		case "skip":
-			err = tp.Skip()
-		}
-
-		if err != nil {
-			fmt.Printf("an error occurred while running the %s command: %v", command, err)
+			if err != nil {
+				fmt.Printf("failed to handle track control: %v: %v\n", action, err)
+			}
 		}
 	}
 }

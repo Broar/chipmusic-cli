@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
+	"github.com/broar/chipmusic-cli/pkg/dashboard"
 	"github.com/broar/chipmusic-cli/pkg/player"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,12 +40,26 @@ func shuffle() error {
 
 	defer tp.Close()
 
-	go handleTrackControls(tp)
+	db, err := dashboard.NewTerminalDashboard()
+	if err != nil {
+		return fmt.Errorf("failed to create terminal dashboard: %w", err)
+	}
+
+	defer db.Close()
+
+	actions := db.Actions()
+	go func() {
+		if err := db.Start(); err != nil {
+			panic(err)
+		}
+	}()
+
+	go handleTrackControlActions(actions, tp)
 
 	var tracks []string
 	page := 1
 	for {
-		err, done := getAndPlayTracks(tracks, page, client, tp)
+		err, done := getAndPlayTracks(tracks, page, client, tp, db)
 		if err != nil {
 			return fmt.Errorf("failed to play tracks: %w", err)
 		}
@@ -57,7 +72,7 @@ func shuffle() error {
 	}
 }
 
-func getAndPlayTracks(tracks []string, page int, client *chipmusic.Client, tp *player.TrackPlayer) (error, bool) {
+func getAndPlayTracks(tracks []string, page int, client *chipmusic.Client, tp *player.TrackPlayer, db *dashboard.TerminalDashboard) (error, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -81,11 +96,11 @@ func getAndPlayTracks(tracks []string, page int, client *chipmusic.Client, tp *p
 
 		cancel()
 
+		db.UpdateCurrentlyPlayingTrack(track)
+
 		if err := tp.Play(track); err != nil {
 			return fmt.Errorf("failed to play track %s: %w", track.Title, err), false
 		}
-
-		fmt.Printf("Now playing: %s by %s\n", track.Title, track.Artist)
 
 		<-tp.Done()
 	}
