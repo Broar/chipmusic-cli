@@ -10,6 +10,9 @@ type Drawer interface {
 
 	// Draw draws to the given screen
 	Draw(screen tcell.Screen)
+
+	// Clear deletes all if any associated drawings from the screen
+	Clear(screen tcell.Screen)
 }
 
 // Coordinate is a x-y coordinate. The origin (i.e. (0, 0)) of the coordinate system is located at the top left of the
@@ -48,7 +51,16 @@ func (w *Widget) Draw(screen tcell.Screen) {
 	}
 }
 
-// TextWidget is able draw a line of text with a style to at an x-y offset
+func (w *Widget) Clear(screen tcell.Screen) {
+	for y := range w.drawing {
+		for x := range w.drawing[y] {
+			screen.SetContent(w.X+x, w.Y+y, ' ', nil, w.style)
+		}
+	}
+}
+
+// TextWidget is able draw a line of text with a style to at an x-y offset. TextWidget is only able to draw text
+// in a left-to-right direction
 type TextWidget struct {
 	base  *Widget
 	style tcell.Style
@@ -62,14 +74,20 @@ func NewTextWidget(x, y int, text string, style tcell.Style) *TextWidget {
 	}
 }
 
-// Draw draws a TextWidget's widget at the the x-y location with a style. This method currently only draws in a
-// left-to-right direction
 func (t *TextWidget) Draw(screen tcell.Screen) {
 	if t.base == nil {
 		return
 	}
 
 	t.base.Draw(screen)
+}
+
+func (t *TextWidget) Clear(screen tcell.Screen) {
+	if t.base == nil {
+		return
+	}
+
+	t.base.Clear(screen)
 }
 
 func (t *TextWidget) SetText(text string) {

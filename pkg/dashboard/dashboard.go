@@ -162,6 +162,7 @@ func (d *TerminalDashboard) UpdateCurrentTrack(track *chipmusic.Track) {
 	}
 
 	currentlyPlaying := d.widgets[currentlyPlayingID]
+	currentlyPlaying.Clear(d.screen)
 	currentlyPlaying.SetText(fmt.Sprintf("Now playing: %s by %s", track.Title, track.Artist))
 	currentlyPlaying.Draw(d.screen)
 

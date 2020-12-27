@@ -47,6 +47,28 @@ func TestTextWidget_Draw(t *testing.T) {
 	}
 }
 
+func TestTextWidget_Clear(t *testing.T) {
+	testCases := []struct {
+		name   string
+		text   string
+		called int
+	}{
+		{"NoText", "", 0},
+		{"OneCharacter", "a", 2},
+		{"MultipleCharacters", "abc", 6},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(tt *testing.T) {
+			screen := &MockScreen{}
+			widget := NewTextWidget(0, 0, testCase.text, tcell.StyleDefault)
+			widget.Draw(screen)
+			widget.Clear(screen)
+			assert.Equal(tt, testCase.called, screen.called)
+		})
+	}
+}
+
 func TestWidget_Draw(t *testing.T) {
 	testCases := []struct {
 		name    string
@@ -66,6 +88,31 @@ func TestWidget_Draw(t *testing.T) {
 			screen := &MockScreen{}
 			widget := NewWidget(0, 0, testCase.drawing, tcell.StyleDefault)
 			widget.Draw(screen)
+			assert.Equal(tt, testCase.called, screen.called)
+		})
+	}
+}
+
+func TestWidget_Clear(t *testing.T) {
+	testCases := []struct {
+		name    string
+		drawing []string
+		called  int
+	}{
+		{"NilDrawing", nil, 0},
+		{"EmptyDrawing", []string{}, 0},
+		{"OneCharacter", []string{"a"}, 2},
+		{"MultipleCharacters", []string{"abc"}, 6},
+		{"MixedRows", []string{"abc", ""}, 6},
+		{"2DDrawing", []string{"a", "b", "c"}, 6},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(tt *testing.T) {
+			screen := &MockScreen{}
+			widget := NewWidget(0, 0, testCase.drawing, tcell.StyleDefault)
+			widget.Draw(screen)
+			widget.Clear(screen)
 			assert.Equal(tt, testCase.called, screen.called)
 		})
 	}
