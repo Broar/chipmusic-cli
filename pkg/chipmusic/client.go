@@ -43,8 +43,8 @@ const (
 
 var (
 	filters = map[string]string{
-		TrackFilterLatest:      defaultTrackFilter,
-		TrackFilterRandom:      "8",
+		TrackFilterLatest:      "0",
+		TrackFilterRandom:      defaultTrackFilter,
 		TrackFilterFeatured:    "9",
 		TrackFilterHighRatings: "10",
 	}
