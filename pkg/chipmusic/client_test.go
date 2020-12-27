@@ -47,6 +47,25 @@ func TestWithHTTPClient(t *testing.T) {
 	assert.Nil(t, client)
 }
 
+func TestWithWorkers(t *testing.T) {
+	testCases := []struct {
+		name string
+		workers  int
+
+	}{
+		{"NegativeWorkers", -1},
+		{"ZeroWorkers", 0},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			client, err := NewClient(WithWorkers(testCase.workers))
+			assert.Error(t, err)
+			assert.Nil(t, client)
+		})
+	}
+}
+
 func TestGetTrack(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		file, err := os.Open(defaultTrackPageFile)
@@ -61,7 +80,7 @@ func TestGetTrack(t *testing.T) {
 
 	defer server.Close()
 
-	client, err := NewClient(WithBaseURL(server.URL), WithHTTPClient(server.Client()))
+	client, err := NewClient(WithBaseURL(server.URL), WithHTTPClient(server.Client()), WithWorkers(DefaultWorkers))
 	require.NoError(t, err, "failed to create client")
 
 	track, err := client.GetTrack(context.Background(), fmt.Sprintf("%s/some.artist/music/some.music", server.URL))

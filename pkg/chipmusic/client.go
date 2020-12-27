@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html/atom"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +20,8 @@ import (
 const (
 	// DefaultBaseURL is redundantly the base URL of the chipmusic.org
 	DefaultBaseURL = "https://chipmusic.org"
+
+	DefaultWorkers = 40
 
 	// AudioFileTypeMP3 is the expected extension for an MP3 audio file
 	AudioFileTypeMP3 AudioFileType = "mp3"
@@ -57,6 +60,9 @@ type Client struct {
 
 	// client is the HTTP client used to make requests. This defaults to http.DefaultClient
 	client *http.Client
+
+	// workers is the number of goroutines to spin up when downloading a track. This defaults to 10
+	workers int
 }
 
 // NewClient creates a new Client object that is configured with a list of Options
@@ -64,6 +70,7 @@ func NewClient(options ...Option) (*Client, error) {
 	client := &Client{
 		baseURL: DefaultBaseURL,
 		client:  http.DefaultClient,
+		workers: DefaultWorkers,
 	}
 
 	for _, option := range options {
@@ -102,6 +109,18 @@ func WithHTTPClient(client *http.Client) Option {
 		}
 
 		c.client = client
+		return nil
+	}
+}
+
+// WithWorkers allows overriding the default number fo workers used to download a file
+func WithWorkers(workers int) Option {
+	return func(client *Client) error {
+		if workers <= 0 {
+			return errors.New("workers must be a positive integer")
+		}
+
+		client.workers = workers
 		return nil
 	}
 }
@@ -173,8 +192,8 @@ func (c *Client) Search(ctx context.Context, search, filter string, page int) ([
 
 	params := url.Values(map[string][]string{
 		"#s": {search},
-		"p": {strconv.Itoa(page)},
-		"f": {resolved},
+		"p":  {strconv.Itoa(page)},
+		"f":  {resolved},
 	})
 
 	u.RawQuery = params.Encode()
@@ -281,7 +300,7 @@ func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 
 	track.FileType = AudioFileType(strings.TrimPrefix(filepath.Ext(trackDownloadURL), "."))
 
-	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, trackDownloadURL, nil)
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodHead, trackDownloadURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get response when downloading track: %w", err)
 	}
@@ -297,15 +316,94 @@ func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 		return nil, fmt.Errorf("expected status code %d when downloading track but got %d instead", http.StatusOK, response.StatusCode)
 	}
 
-	raw, err := ioutil.ReadAll(response.Body)
+	reader, err := c.downloadTrack(response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to download entire track: %w", err)
+		return nil, fmt.Errorf("faild to download track: %w", err)
 	}
 
-	reader := bytes.NewReader(raw)
 	track.Reader = &ReadSeekNopCloser{Reader: reader}
 
 	return track, nil
+}
+
+func (c *Client) downloadTrack(downloadMetadataResponse *http.Response) (io.ReadSeeker, error) {
+	// The server accepts Range requests so we should use them to provide greater throughput
+	if downloadMetadataResponse.Header.Get("Accept-Ranges") == "bytes" {
+		return c.downloadTrackWithWorkers(downloadMetadataResponse)
+	}
+
+	// The server does not accept Range requests so we'll gracefully degrade to a single download request for the whole file
+	u := downloadMetadataResponse.Request.URL.String()
+	request, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create track download request: %w", err)
+	}
+
+	response, err := c.client.Do(request)
+	if err != nil {
+		return nil,  fmt.Errorf("failed to get response for track download: %w", err)
+	}
+
+	defer response.Body.Close()
+
+	content, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil,  fmt.Errorf("failed to read response for track download: %w", err)
+	}
+
+	return bytes.NewReader(content), nil
+}
+
+func (c *Client) downloadTrackWithWorkers(downloadMetadataResponse *http.Response) (io.ReadSeeker, error) {
+	length, err := strconv.ParseInt(downloadMetadataResponse.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse Content-Length header: %w", err)
+	}
+
+	// TODO: We can lose some bytes from the division
+	content := make([]byte, length, length)
+	size := int(length / int64(c.workers))
+	group := errgroup.Group{}
+	for i := 0; i < c.workers; i++ {
+		start := i * size
+		end := (i + 1) * size
+
+		// We want to always start with offset of 1 byte so our chunks never overlap except for the first chunk
+		if start != 0 {
+			start++
+		}
+
+		group.Go(func() error {
+			u := downloadMetadataResponse.Request.URL.String()
+			request, err := http.NewRequest(http.MethodGet, u, nil)
+			if err != nil {
+				return fmt.Errorf("failed to create track download request: %w", err)
+			}
+
+			request.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+
+			response, err := c.client.Do(request)
+			if err != nil {
+				return fmt.Errorf("failed to get response for track download: %w", err)
+			}
+
+			defer response.Body.Close()
+
+			chunk, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				return fmt.Errorf("failed to read response for track download: %w", err)
+			}
+
+			copy(content[start:start+len(chunk)], chunk)
+			return nil
+		})
+	}
+
+	if err := group.Wait(); err != nil {
+		return nil, fmt.Errorf("failed to download chunk: %w", err)
+	}
+
+	return bytes.NewReader(content), nil
 }
 
 func (c *Client) parseTrackMetadata(info *goquery.Selection) *Track {
