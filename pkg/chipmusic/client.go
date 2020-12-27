@@ -185,13 +185,13 @@ func (c *Client) Search(ctx context.Context, search, filter string, page int) ([
 		resolved = defaultTrackFilter
 	}
 
-	u, err := url.Parse(fmt.Sprintf("%s/music", c.baseURL))
+	u, err := url.Parse(fmt.Sprintf("%s/music#", c.baseURL))
 	if err != nil {
 		return nil, fmt.Errorf("failed to build search URL: %w", err)
 	}
 
 	params := url.Values(map[string][]string{
-		"#s": {search},
+		"s": {search},
 		"p":  {strconv.Itoa(page)},
 		"f":  {resolved},
 	})

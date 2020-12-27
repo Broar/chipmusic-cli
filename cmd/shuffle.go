@@ -26,6 +26,10 @@ func init() {
 	rootCmd.AddCommand(shuffleCmd)
 	shuffleCmd.Flags().String("search", "", "Add search text to the shuffle to limit results")
 	shuffleCmd.Flags().String("filter", "", "Set a filter for the shuffle. Allowed filters: [latest, random, featured, popular]")
+
+	if err := viper.BindPFlags(shuffleCmd.Flags()); err != nil {
+		panic(fmt.Errorf("failed to bind flags: %w", err))
+	}
 }
 
 func shuffle() error {
