@@ -177,6 +177,11 @@ func (d *TerminalDashboard) UpdateTrackTimer(current, total time.Duration) {
 	trackTimer.SetText(formatTrackTimer(current, total))
 	trackTimer.Draw(d.screen)
 
+	if total == 0 {
+		d.screen.Show()
+		return
+	}
+
 	progressBarText := strings.Repeat("▊", int(float64(progressBarLength) * (float64(current) / float64(total))))
 	progressBar := d.widgets[progressBarID]
 	progressBar.SetText(progressBarText)
