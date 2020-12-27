@@ -291,8 +291,9 @@ func (c *Client) parseTrack(document *goquery.Document) (*Track, error) {
 		return nil, fmt.Errorf("failed to get response when downloading track: %w", err)
 	}
 
+	defer response.Body.Close()
+
 	if response.StatusCode != http.StatusOK {
-		_ = response.Body.Close()
 		return nil, fmt.Errorf("expected status code %d when downloading track but got %d instead", http.StatusOK, response.StatusCode)
 	}
 
