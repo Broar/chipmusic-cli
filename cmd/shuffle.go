@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/broar/chipmusic-cli/pkg/chipmusic"
 	"github.com/broar/chipmusic-cli/pkg/dashboard"
@@ -98,7 +99,9 @@ func getAndPlayTracks(tracks []string, page int, client *chipmusic.Client, tp *p
 
 		db.UpdateCurrentTrack(track)
 
-		if err := tp.Play(track); err != nil {
+		if err := tp.Play(track); errors.Is(err, player.ErrUnknownFileFormat) {
+			continue
+		} else if err != nil {
 			return fmt.Errorf("failed to play track %s: %w", track.Title, err), false
 		}
 
